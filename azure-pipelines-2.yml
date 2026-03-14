@@ -15,7 +15,7 @@ steps:
 - task: AzureCLI@2
   displayName: Create Azure Infrastructure
   inputs:
-    azureSubscription: azure-connection
+    azureSubscription: service-conn
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
