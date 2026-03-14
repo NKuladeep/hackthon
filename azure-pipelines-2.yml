@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  vmImage: cicd pool
+  name: cicd pool
 
 variables:
   RESOURCE_GROUP: cd-aks-rg
