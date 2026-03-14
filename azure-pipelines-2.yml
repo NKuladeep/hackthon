@@ -7,15 +7,15 @@ pool:
 variables:
   RESOURCE_GROUP: cd-aks-rg
   LOCATION: eastus
-  ACR_NAME: cdacrregistry11
+  ACR_NAME: kuladeepacr12345
   AKS_NAME: cdakscluster
 
 steps:
 
 - task: AzureCLI@2
-  displayName: Create Azure Infrastructure
+  displayName: Deploy AKS + Prometheus
   inputs:
-    azureSubscription: service-conn
+    azureSubscription: azure-conn
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -31,27 +31,28 @@ steps:
         --name $ACR_NAME \
         --sku Basic
 
-      echo "Creating AKS Cluster"
+      echo "Creating AKS"
       az aks create \
         --resource-group $RESOURCE_GROUP \
         --name $AKS_NAME \
-        --node-count 2 \
-        --enable-addons monitoring \
+        --node-count 1 \
         --generate-ssh-keys
 
-      echo "Get AKS credentials"
+      echo "Getting AKS credentials"
       az aks get-credentials \
         --resource-group $RESOURCE_GROUP \
-        --name $AKS_NAME
+        --name $AKS_NAME \
+        --overwrite-existing
 
-      echo "Install Helm"
-      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      echo "Checking cluster connection"
+      kubectl get nodes
 
-      echo "Install Prometheus"
+      echo "Create monitoring namespace"
+      kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+
+      echo "Deploy Prometheus"
       helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
       helm repo update
 
-      kubectl create namespace monitoring
-
-      helm install prometheus prometheus-community/kube-prometheus-stack \
+      helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
         --namespace monitoring
