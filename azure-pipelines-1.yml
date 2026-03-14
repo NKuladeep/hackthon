@@ -1,0 +1,57 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  RESOURCE_GROUP: cd-aks-rg
+  LOCATION: eastus
+  ACR_NAME: cdacrregistry11
+  AKS_NAME: cdakscluster
+
+steps:
+
+- task: AzureCLI@2
+  displayName: Create Azure Infrastructure
+  inputs:
+    azureSubscription: azure-connection
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+
+      echo "Creating Resource Group"
+      az group create \
+        --name $RESOURCE_GROUP \
+        --location $LOCATION
+
+      echo "Creating ACR"
+      az acr create \
+        --resource-group $RESOURCE_GROUP \
+        --name $ACR_NAME \
+        --sku Basic
+
+      echo "Creating AKS Cluster"
+      az aks create \
+        --resource-group $RESOURCE_GROUP \
+        --name $AKS_NAME \
+        --node-count 2 \
+        --enable-addons monitoring \
+        --generate-ssh-keys
+
+      echo "Get AKS credentials"
+      az aks get-credentials \
+        --resource-group $RESOURCE_GROUP \
+        --name $AKS_NAME
+
+      echo "Install Helm"
+      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      echo "Install Prometheus"
+      helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      helm repo update
+
+      kubectl create namespace monitoring
+
+      helm install prometheus prometheus-community/kube-prometheus-stack \
+        --namespace monitoring
