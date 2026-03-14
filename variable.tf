@@ -1,0 +1,10 @@
+variable "rg-name" {}
+variable "rg-location" {}
+variable "pip-name" {}
+variable "nsg-name" {}
+variable "vnet-name" {}
+variable "subnet1-name" {}
+variable "nic" {}
+variable "vm-name" {}
+variable "username" {}
+variable "password" {}
