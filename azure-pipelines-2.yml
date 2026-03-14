@@ -6,7 +6,7 @@ pool:
 
 variables:
   RESOURCE_GROUP: cd-aks-rg
-  LOCATION: eastus
+  LOCATION: canada central
   ACR_NAME: cdacrregistry11
   AKS_NAME: cdakscluster
 
