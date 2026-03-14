@@ -2,20 +2,20 @@ trigger:
 - main
 
 pool:
-  name: cicd pool
+  vmImage: cicd pool
 
 variables:
   RESOURCE_GROUP: cd-aks-rg
   LOCATION: eastus
-  ACR_NAME: kuladeepacr12345
+  ACR_NAME: cdacrregistry11
   AKS_NAME: cdakscluster
 
 steps:
 
 - task: AzureCLI@2
-  displayName: Deploy AKS + Prometheus
+  displayName: Create Azure Infrastructure
   inputs:
-    azureSubscription: azure-conn
+    azureSubscription: service-conn
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -31,28 +31,24 @@ steps:
         --name $ACR_NAME \
         --sku Basic
 
-      echo "Creating AKS"
+      echo "Creating AKS Cluster"
       az aks create \
         --resource-group $RESOURCE_GROUP \
         --name $AKS_NAME \
-        --node-count 1 \
+        --node-count 2 \
+        --enable-addons monitoring \
         --generate-ssh-keys
 
-      echo "Getting AKS credentials"
+      echo "Get AKS credentials"
       az aks get-credentials \
         --resource-group $RESOURCE_GROUP \
-        --name $AKS_NAME \
-        --overwrite-existing
-
-      echo "Checking cluster connection"
-      kubectl get nodes
-
-      echo "Create monitoring namespace"
-      kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
-
-      echo "Deploy Prometheus"
+        --name $AKS_NAME
+      
+      echo "Install Prometheus"
       helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
       helm repo update
 
-      helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+      kubectl create namespace monitoring
+
+      helm install prometheus prometheus-community/kube-prometheus-stack \
         --namespace monitoring
