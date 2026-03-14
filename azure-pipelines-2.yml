@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: cicd pool
 
 variables:
   RESOURCE_GROUP: cd-aks-rg
