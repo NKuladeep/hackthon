@@ -6,7 +6,7 @@ pool:
 
 variables:
   RESOURCE_GROUP: cd-aks-rg
-  LOCATION: canada central
+  LOCATION: canadacentral
   ACR_NAME: cdacrregistry11
   AKS_NAME: cdakscluster
 
@@ -36,6 +36,7 @@ steps:
         --resource-group $RESOURCE_GROUP \
         --name $AKS_NAME \
         --node-count 2 \
+        --node-vm-size Standard_D2s_v3 \
         --enable-addons monitoring \
         --generate-ssh-keys
 
